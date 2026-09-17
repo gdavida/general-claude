@@ -27,19 +27,20 @@ inbox. That drives most of the structural choices here:
 - **Dividers are 1px `<td>` rows** with a `bgcolor` attribute, not
   `border-top` on a table. Borders on `<table>` elements get dropped on
   import; a filled cell survives.
-- **No VML, no `<!--[if !mso]><!-- -->` reverse conditionals.** Importers
-  strip comments, and that pattern's opening token is itself a comment — the
-  block it wraps can get eaten along with it, which would have taken the CTA
-  button with it. Beefree generates its own Outlook-safe markup on export,
-  so the VML is redundant in this pipeline anyway.
+- **The CTA keeps its VML fallback.** Outlook's Word engine ignores
+  `border-radius`, so the pill is drawn with `<v:roundrect>` and the HTML
+  button is hidden from Outlook by a `<!--[if !mso]><!-- -->` reverse
+  conditional. That pattern is comment-delimited, so a comment-stripping
+  importer can eat the button along with it — if you ever feed this file to
+  Beefree, delete both branches and keep only the plain table button.
+  Beefree regenerates its own Outlook-safe markup on export anyway.
 - **Longhand padding** (`padding-top`/`padding-bottom`) and `bgcolor`
   attributes alongside `background-color`, since the importer reads
   attributes more consistently than shorthand.
 
-The trade-off from dropping VML: if you send this file *directly* rather
-than through Beefree, Outlook desktop renders the CTA as a green rectangle
-instead of a pill. Everything else is unaffected. Export from Beefree and
-that goes away.
+Sending straight through HubSpot works too — its importer is far more
+permissive than Beefree's, and it passes the HTML through close to as-is,
+which is why the VML is worth keeping here.
 
 Other notes:
 
@@ -69,7 +70,9 @@ sharp on retina. Swap the file, keep the filename, and nothing else changes.
 | `assets/linkedin/twitter/instagram.png` | 80x80 | Social glyphs in `#98A2B3` |
 
 Also replace `{{unsubscribe_url}}` with your ESP's merge tag, and point the
-`https://betterpros.com` links at real destinations with UTM params.
+`https://betterpros.com` links at real destinations with UTM params. HubSpot
+will block publishing until the unsubscribe link uses its own token, and
+flags it for you at publish time.
 
 Before sending, re-host `assets/` on a CDN and switch the `src` attributes to
 absolute HTTPS URLs — relative paths don't resolve in an inbox.
