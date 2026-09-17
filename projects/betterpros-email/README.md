@@ -12,22 +12,50 @@ open index.html
 
 ## Build notes
 
-- **Table-based, 600px** fixed shell, inlined styles. Renders in Outlook
-  (Word engine), Gmail, Apple Mail, Outlook.com.
-- **Outlook specifics:** MSO conditional wrapper table for the 600px shell,
-  `<v:roundrect>` VML fallback for the pill CTA (Word ignores
-  `border-radius`), `AllowPNG` + 96 PPI in `OfficeDocumentSettings`.
-- **Responsive:** one `@media (max-width:620px)` block. The 2x2 stats grid
-  stacks to one column via `.col { display:block; width:100% }` with the
-  `.gut` spacer cells collapsing. Gmail app on Android ignores media
-  queries — it degrades to a scaled-down 600px layout, which is fine here.
-- **Fonts:** Inter with a system-sans fallback stack; mono labels use the
-  `SFMono-Regular, Consolas, Menlo` stack. No webfont `@import` — Outlook
-  and Gmail strip it, and the fallbacks are close enough.
-- **Preheader** text is set at the top of `<body>` (hidden div + zero-width
-  padding chars so the inbox preview doesn't leak body copy).
-- Both gutters and vertical spacers are real `<td>`/`<div>` elements rather
-  than margins, since Outlook drops margins on block elements.
+Written to survive **Beefree's HTML importer**, which is stricter than an
+inbox. That drives most of the structural choices here:
+
+- **Horizontal padding is physical spacer cells, not CSS.** Every section is
+  a 3-column row: `<td width="32">` gutter, `<td width="536">` content,
+  `<td width="32">` gutter. Beefree does not reliably carry
+  `padding-left`/`padding-right` from a content `<td>` through an import, so
+  side padding declared that way disappears. A real cell with a `width`
+  attribute cannot be dropped.
+- **One `<table>` per section**, stacked, rather than one table with many
+  `<tr>`s. That maps 1:1 onto Beefree's row model, so each section lands as
+  its own editable row instead of collapsing into a single block.
+- **Dividers are 1px `<td>` rows** with a `bgcolor` attribute, not
+  `border-top` on a table. Borders on `<table>` elements get dropped on
+  import; a filled cell survives.
+- **No VML, no `<!--[if !mso]><!-- -->` reverse conditionals.** Importers
+  strip comments, and that pattern's opening token is itself a comment — the
+  block it wraps can get eaten along with it, which would have taken the CTA
+  button with it. Beefree generates its own Outlook-safe markup on export,
+  so the VML is redundant in this pipeline anyway.
+- **Longhand padding** (`padding-top`/`padding-bottom`) and `bgcolor`
+  attributes alongside `background-color`, since the importer reads
+  attributes more consistently than shorthand.
+
+The trade-off from dropping VML: if you send this file *directly* rather
+than through Beefree, Outlook desktop renders the CTA as a green rectangle
+instead of a pill. Everything else is unaffected. Export from Beefree and
+that goes away.
+
+Other notes:
+
+- 600px fixed shell, inlined styles, `Inter` with a system-sans fallback.
+  Mono labels use `Consolas, Menlo, Courier, monospace`.
+- One `@media (max-width:620px)` block: the 2x2 stats grid stacks by
+  flipping cells to `display:block` and collapsing the spacer cells, and
+  gutters narrow to 22px. Beefree replaces this with its own responsive
+  handling on import — it only matters if you send the file as-is.
+- Hidden preheader at the top of `<body>` so the inbox preview doesn't leak
+  the first line of body copy.
+
+Verified rendering at 640px and 390px viewports. The Beefree import itself
+is untested — I have no way to run it from here, so the structure follows
+what their importer documents as supported rather than a confirmed round
+trip.
 
 ## Placeholders to swap before sending
 
@@ -45,6 +73,11 @@ Also replace `{{unsubscribe_url}}` with your ESP's merge tag, and point the
 
 Before sending, re-host `assets/` on a CDN and switch the `src` attributes to
 absolute HTTPS URLs — relative paths don't resolve in an inbox.
+
+**This matters for the Beefree import too.** Beefree fetches images over the
+network, so the relative `assets/...` paths come in broken. Either upload the
+files to Beefree's image manager and repoint the blocks after importing, or
+swap the `src` attributes for absolute URLs *before* you import.
 
 `email.txt` is the plain-text alternative part. Send it alongside the HTML;
 an HTML-only message is a deliverability penalty at most providers.
