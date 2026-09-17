@@ -2,7 +2,12 @@
 
 Responsive HTML email announcing BetterPros' LatAm AEC staffing service.
 Built from a design mock: header, hero, stats grid, 3-step "how it works",
-two testimonials, CTA, footer.
+two testimonials, footer.
+
+Two CTAs, both pointing at the same destination: a left-aligned one directly
+under the hero image so it lands above the fold, and the centered one on the
+grey band at the bottom. Give the two links different UTM params so you can
+tell which position actually converts.
 
 ## Open
 
