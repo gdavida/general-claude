@@ -47,5 +47,5 @@ LET'S BUILD YOUR TEAM
 https://betterpros.com
 
 ---
-BetterPros Inc. - 1000 Brickell Ave Ste 480, Miami, Florida
-Unsubscribe: {{unsubscribe_url}}
+{{ site_settings.company_name }} - {{ site_settings.company_street_address_1 }}, {{ site_settings.company_city }}, {{ site_settings.company_state }}
+Unsubscribe: {{ unsubscribe_link }}

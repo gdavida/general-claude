@@ -74,10 +74,27 @@ sharp on retina. Swap the file, keep the filename, and nothing else changes.
 | `assets/step-1..3.png` | 80x80 | Icons, green `#10B981` on `#E6F7F0` |
 | `assets/linkedin/twitter/instagram.png` | 80x80 | Social glyphs in `#98A2B3` |
 
-Also replace `{{unsubscribe_url}}` with your ESP's merge tag, and point the
-`https://betterpros.com` links at real destinations with UTM params. HubSpot
-will block publishing until the unsubscribe link uses its own token, and
-flags it for you at publish time.
+Point the `https://betterpros.com` links at real destinations with UTM params
+(different ones per CTA position).
+
+## HubSpot tokens
+
+The footer already carries the CAN-SPAM tokens HubSpot blocks publishing
+without:
+
+```
+{{ site_settings.company_name }} · {{ site_settings.company_street_address_1 }},
+{{ site_settings.company_city }}, {{ site_settings.company_state }}
+{{ unsubscribe_link }}
+```
+
+Those `site_settings` values resolve from **Settings > Marketing > Email >
+Configuration** in the HubSpot account, not from anything in this file — if
+the rendered footer comes out blank, that's where to look.
+
+The same tokens are in `email.txt`. They render as literal text anywhere
+other than HubSpot, so swap them back to plain copy if you ever send this
+through a different ESP.
 
 Before sending, re-host `assets/` on a CDN and switch the `src` attributes to
 absolute HTTPS URLs — relative paths don't resolve in an inbox.
